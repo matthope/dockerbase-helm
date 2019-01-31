@@ -1,16 +1,15 @@
 FROM alpine:3.8 as build
 
-RUN apk add --update \
-	ca-certificates=~20171114 \
+RUN apk add --quiet --update \
 	bash=~4.4 \
-	git=~2.18
-
-WORKDIR /
-
-RUN apk add --update -t deps \
+	ca-certificates=~20171114 \
 	curl=~7.61 \
 	gzip=~1.9 \
+	git=~2.18 \
+	jq=~1.6 \
 	tar=~1.31 
+
+WORKDIR /
 
 ARG VERSIONS="2.12.3 2.12.1 2.9.1"
 RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L http://storage.googleapis.com/kubernetes-helm/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
