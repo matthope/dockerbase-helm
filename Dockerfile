@@ -1,16 +1,18 @@
-FROM alpine:3.8 AS base
+FROM alpine:3.11.3 AS base
 FROM base as build
 
 RUN apk add --quiet --update \
-	bash=~4.4 \
-	ca-certificates=~20190108 \
-	curl=~7.61 \
-	gzip=~1.9 \
-	git=~2.18 \
+	bash=~5.0 \
+	ca-certificates=~20191127 \
+	curl=~7 \
+	gzip=~1.10 \
+	git=~2.24 \
 	jq=~1.6 \
 	tar=~1.32
 
 WORKDIR /
+
+SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
 ARG VERSIONS="2.14.1 2.14.0 2.12.3"
 RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L http://storage.googleapis.com/kubernetes-helm/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
@@ -30,10 +32,10 @@ RUN mkdir -p "$(helm home)/plugins" ;\
 FROM base
 
 RUN apk add --update --no-cache \
-	bash=~4.4 \
-	ca-certificates=~20190108 \
-	curl=~7.61 \
-	git=~2.18 \
+	bash=~5.0 \
+	ca-certificates=~20191127 \
+	curl=~7 \
+	git=~2.24 \
 	jq=~1.6
 
 COPY --from=build /out/* /bin/
