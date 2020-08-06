@@ -14,7 +14,7 @@ WORKDIR /
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
-ARG VERSIONS="2.16.1 2.14.1 2.12.3"
+ARG VERSIONS="2.16.6 2.14.1 2.12.3"
 RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L http://storage.googleapis.com/kubernetes-helm/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
 RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm ; ln -s /out/helm /usr/local/bin/helm
@@ -27,7 +27,8 @@ RUN mkdir -p "$(helm home)/plugins" ;\
 	helm plugin install https://github.com/lrills/helm-unittest ;\
 	helm plugin install https://github.com/maorfr/helm-backup ;\
 	helm plugin install https://github.com/mbenabda/helm-local-chart-version ;\
-	helm plugin install https://github.com/mstrzele/helm-edit
+	helm plugin install https://github.com/mstrzele/helm-edit ;\
+	helm plugin install https://github.com/aslafy-z/helm-git 
 
 FROM base
 
