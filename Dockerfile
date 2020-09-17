@@ -12,21 +12,43 @@ RUN apk add --quiet --no-cache --update \
 
 WORKDIR /out
 
-FROM build AS helm
+FROM build AS helm3
+
+SHELL ["/bin/sh", "-o", "pipefail", "-c"]
+
+ARG VERSIONS="3.3.1"
+RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
+
+RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm ; ln -s /out/helm /usr/local/bin/helm
+
+RUN mkdir -p "/root/.helm/plugins" ;\
+	helm plugin install https://github.com/aslafy-z/helm-git ;\
+	helm plugin install https://github.com/databus23/helm-diff --version master ;\
+	helm plugin install https://github.com/futuresimple/helm-secrets ;\
+	helm plugin install https://github.com/helm/helm-2to3.git ;\
+	helm plugin install https://github.com/lrills/helm-unittest ;\
+	helm plugin install https://github.com/mbenabda/helm-local-chart-version ;\
+	echo
+
+
+
+FROM build AS helm2
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
 ARG VERSIONS="2.16.9 2.14.3"
-RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L http://storage.googleapis.com/kubernetes-helm/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
+RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
 RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm ; ln -s /out/helm /usr/local/bin/helm
 
 RUN mkdir -p "$(helm home)/plugins" ;\
+	helm plugin install https://github.com/aslafy-z/helm-git ;\
 	helm plugin install https://github.com/databus23/helm-diff --version master ;\
 	helm plugin install https://github.com/futuresimple/helm-secrets ;\
+	helm plugin install https://github.com/helm/helm-2to3.git ;\
 	helm plugin install https://github.com/lrills/helm-unittest ;\
 	helm plugin install https://github.com/mbenabda/helm-local-chart-version ;\
-	helm plugin install https://github.com/aslafy-z/helm-git 
+	echo
 
 FROM build AS kustomize
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
@@ -58,8 +80,12 @@ RUN apk add --update --no-cache \
 	git=~2.24 \
 	jq=~1.6
 
-COPY --from=helm /out/* /bin/
-COPY --from=helm /root/.helm /root/.helm/
+COPY --from=helm2 /out/* /bin/
+COPY --from=helm2 /root/.helm /root/.helm/
+
+COPY --from=helm3 /out/* /bin/
+COPY --from=helm3 /root/.local/ /root/.local/
+
 
 COPY --from=kustomize /out/* /bin/
 COPY --from=kustomize /root/.config /root/.config/
