@@ -17,37 +17,35 @@ FROM build AS helm3
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
 ARG VERSIONS="3.3.1"
-RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
+RUN install -d /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
-RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm ; ln -s /out/helm /usr/local/bin/helm
+RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm3 ; ln -s /out/helm3 /usr/local/bin/helm3 ; ln -s helm3 /out/helm
 
 RUN mkdir -p "/root/.helm/plugins" ;\
-	helm plugin install https://github.com/aslafy-z/helm-git ;\
-	helm plugin install https://github.com/databus23/helm-diff --version master ;\
-	helm plugin install https://github.com/futuresimple/helm-secrets ;\
-	helm plugin install https://github.com/helm/helm-2to3.git ;\
-	helm plugin install https://github.com/lrills/helm-unittest ;\
-	helm plugin install https://github.com/mbenabda/helm-local-chart-version ;\
+	helm3 plugin install https://github.com/aslafy-z/helm-git ;\
+	helm3 plugin install https://github.com/databus23/helm-diff --version master ;\
+	helm3 plugin install https://github.com/futuresimple/helm-secrets ;\
+	helm3 plugin install https://github.com/helm/helm-2to3.git ;\
+	helm3 plugin install https://github.com/lrills/helm-unittest ;\
+	helm3 plugin install https://github.com/mbenabda/helm-local-chart-version ;\
 	echo
-
-
 
 FROM build AS helm2
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
 ARG VERSIONS="2.16.9 2.14.3"
-RUN mkdir /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
+RUN install -d /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
-RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm ; ln -s /out/helm /usr/local/bin/helm
+RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm2 ; ln -s /out/helm2 /usr/local/bin/helm2
 
-RUN mkdir -p "$(helm home)/plugins" ;\
-	helm plugin install https://github.com/aslafy-z/helm-git ;\
-	helm plugin install https://github.com/databus23/helm-diff --version master ;\
-	helm plugin install https://github.com/futuresimple/helm-secrets ;\
-	helm plugin install https://github.com/helm/helm-2to3.git ;\
-	helm plugin install https://github.com/lrills/helm-unittest ;\
-	helm plugin install https://github.com/mbenabda/helm-local-chart-version ;\
+RUN mkdir -p "$(helm2 home)/plugins" ;\
+	helm2 plugin install https://github.com/aslafy-z/helm-git ;\
+	helm2 plugin install https://github.com/databus23/helm-diff --version 3.1.2 ;\
+	helm2 plugin install https://github.com/futuresimple/helm-secrets ;\
+	helm2 plugin install https://github.com/helm/helm-2to3.git ;\
+	helm2 plugin install https://github.com/lrills/helm-unittest ;\
+	helm2 plugin install https://github.com/mbenabda/helm-local-chart-version ;\
 	echo
 
 FROM build AS kustomize
