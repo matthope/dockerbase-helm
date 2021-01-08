@@ -16,7 +16,7 @@ FROM build AS helm3
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
-ARG VERSIONS="3.3.1"
+ARG VERSIONS="3.4.2"
 RUN install -d /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
 RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm3 ; ln -s /out/helm3 /usr/local/bin/helm3 ; ln -s helm3 /out/helm
@@ -34,7 +34,7 @@ FROM build AS helm2
 
 SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
-ARG VERSIONS="2.16.9 2.14.3"
+ARG VERSIONS="2.17.0 2.14.3"
 RUN install -d /out ; for v in $VERSIONS ; do curl -s -L https://get.helm.sh/helm-v${v}-linux-amd64.tar.gz | tar zx -C /tmp ; mv /tmp/linux-amd64/helm /out/helm-v${v} ; ls -lad /out/helm-v${v} ; done
 
 RUN ln -s helm-v$( echo $VERSIONS | cut -d" " -f1 ) /out/helm2 ; ln -s /out/helm2 /usr/local/bin/helm2
@@ -67,7 +67,7 @@ RUN curl --fail --location -o /out/kubectl https://storage.googleapis.com/kubern
 
 FROM build AS helmfile
 
-COPY --from=quay.io/roboll/helmfile:v0.125.3 /usr/local/bin/helmfile /out/helmfile
+COPY --from=quay.io/roboll/helmfile:v0.135.0 /usr/local/bin/helmfile /out/helmfile
 
 FROM base
 
